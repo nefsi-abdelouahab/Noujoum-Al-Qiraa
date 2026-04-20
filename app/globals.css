@@ -1,0 +1,88 @@
+@import "tailwindcss";
+@source "../components/**/*.{js,ts,jsx,tsx}";
+@source "../app/**/*.{js,ts,jsx,tsx}";
+:root {
+  --color-primary: #E8B41A;
+  --color-secondary: #9917BA;
+  --color-primary-dark: #c49a14;
+  --color-secondary-dark: #7a1295;
+  --color-bg: #07070f;
+  --color-surface: #0f0f1e;
+  --color-card: rgba(255, 255, 255, 0.04);
+  --color-border: rgba(255, 255, 255, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  direction: rtl;
+}
+
+body {
+  font-family: "Cairo", sans-serif;
+  background: var(--color-bg);
+  color: #ffffff;
+  overflow-x: hidden;
+  direction: rtl;
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, var(--color-primary), var(--color-secondary));
+  border-radius: 10px;
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-strong {
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.glow-primary {
+  box-shadow: 0 0 30px rgba(232, 180, 26, 0.4), 0 0 60px rgba(232, 180, 26, 0.2);
+}
+
+.glow-secondary {
+  box-shadow: 0 0 30px rgba(153, 23, 186, 0.4), 0 0 60px rgba(153, 23, 186, 0.2);
+}
+
+.section-padding {
+  padding: 100px 0;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+}
+
+/* Toast custom */
+.Toastify__toast {
+  font-family: "Cairo", sans-serif !important;
+  border-radius: 16px !important;
+}
