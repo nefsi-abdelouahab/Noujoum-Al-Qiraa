@@ -10,24 +10,25 @@ import {
   Loader2,
   AlertTriangle,
   BookOpen,
+  Heart,
+  UserPlus,
 } from "lucide-react";
-import { wilayas, educationLevels, bookGenres } from "@/data/locations";
+import { dairas, educationLevels, bookGenres } from "@/data/locations";
 import {
   calculateCategory,
   getCategoryColor,
-  getCategoryEmoji,
   getCategoryRange,
   type Category,
 } from "@/utils/helpers";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// ─── Types ─────────────────────────────────────────────────────────────────
 interface FormData {
   lastName: string;
   firstName: string;
   dateOfBirth: string;
-  wilaya: string;
-  commune: string;
+  isSpecialNeeds: boolean;
   daira: string;
+  commune: string;
   educationLevel: string;
   schoolName: string;
   parentName: string;
@@ -37,6 +38,8 @@ interface FormData {
   genres: string[];
   previousParticipation: string;
   presentationExperience: string;
+  aboutProgram: string;
+  motivation: string;
   videoLink: string;
 }
 
@@ -52,9 +55,9 @@ const initialForm: FormData = {
   lastName: "",
   firstName: "",
   dateOfBirth: "",
-  wilaya: "",
-  commune: "",
+  isSpecialNeeds: false,
   daira: "",
+  commune: "",
   educationLevel: "",
   schoolName: "",
   parentName: "",
@@ -64,10 +67,12 @@ const initialForm: FormData = {
   genres: [],
   previousParticipation: "لا",
   presentationExperience: "لا",
+  aboutProgram: "",
+  motivation: "",
   videoLink: "",
 };
 
-// ─── Field Component ──────────────────────────────────────────────────────────
+// ─── Field Component ────────────────────────────────────────────────────────
 function Field({
   label,
   error,
@@ -126,7 +131,13 @@ const inputStyle = (
   width: "100%",
   padding: "14px 16px",
   borderRadius: "14px",
-  border: `1.5px solid ${hasError ? "#ff6b6b66" : focused ? "rgba(232,180,26,0.5)" : "rgba(255,255,255,0.08)"}`,
+  border: `1.5px solid ${
+    hasError
+      ? "#ff6b6b66"
+      : focused
+        ? "rgba(232,180,26,0.5)"
+        : "rgba(255,255,255,0.08)"
+  }`,
   background: focused ? "rgba(232,180,26,0.04)" : "rgba(255,255,255,0.04)",
   color: "#fff",
   fontSize: "15px",
@@ -135,72 +146,91 @@ const inputStyle = (
   transition: "all 0.2s ease",
   direction: "rtl",
   boxShadow: focused ? "0 0 0 3px rgba(232,180,26,0.1)" : "none",
+  boxSizing: "border-box",
 });
 
-// ─── Main Form ────────────────────────────────────────────────────────────────
+const textareaStyle = (focused: boolean): React.CSSProperties => ({
+  ...inputStyle(focused, false),
+  resize: "vertical",
+  minHeight: "100px",
+  lineHeight: 1.7,
+});
+
+// ─── Main Form ──────────────────────────────────────────────────────────────
 export default function RegistrationForm() {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormData>(initialForm);
-  const [errors, setErrors] = useState<Partial<FormData>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>(
+    {},
+  );
   const [focused, setFocused] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [detectedCategory, setDetectedCategory] = useState<Category>(null);
 
-  const wilayaData = wilayas.find((w) => w.id === form.wilaya);
-  const communes = wilayaData?.communes || [];
+  const selectedDaira = dairas.find((d: any) => d.id === form.daira);
+  const communes = selectedDaira?.communes || [];
+  const isOutsideSchool = form.educationLevel === "خارج المنظومة التعليمية";
 
-  const set = (key: keyof FormData, value: string | string[]) => {
+  const set = (key: keyof FormData, value: string | string[] | boolean) => {
     setForm((f) => ({ ...f, [key]: value }));
     if (errors[key]) setErrors((e) => ({ ...e, [key]: "" }));
-    if (key === "dateOfBirth") {
-      const cat = calculateCategory(value as string);
-      setDetectedCategory(cat);
+    if (key === "dateOfBirth" || key === "isSpecialNeeds") {
+      const dob = key === "dateOfBirth" ? (value as string) : form.dateOfBirth;
+      const sn =
+        key === "isSpecialNeeds" ? (value as boolean) : form.isSpecialNeeds;
+      setDetectedCategory(calculateCategory(dob, sn));
     }
   };
 
   const toggleGenre = (genre: string) => {
     const current = form.genres;
-    if (current.includes(genre)) {
-      set(
-        "genres",
-        current.filter((g) => g !== genre),
-      );
-    } else {
-      set("genres", [...current, genre]);
-    }
+    set(
+      "genres",
+      current.includes(genre)
+        ? current.filter((g) => g !== genre)
+        : [...current, genre],
+    );
   };
 
-  // ─── Validation per step ──────────────────────────────────────────────────
+  // ─── Validation ──────────────────────────────────────────────────────────
   const validateStep = (): boolean => {
     const e: Partial<Record<keyof FormData, string>> = {};
+
     if (step === 0) {
-      if (!form.lastName.trim()) e.lastName = "اللقب مطلوب";
-      if (!form.firstName.trim()) e.firstName = "الاسم مطلوب";
-      if (!form.dateOfBirth) e.dateOfBirth = "تاريخ الميلاد مطلوب";
-      else {
-        const cat = calculateCategory(form.dateOfBirth);
-        if (!cat) e.dateOfBirth = "العمر خارج النطاق المسموح به (5-30 سنة)";
+      if (!form.dateOfBirth) {
+        e.dateOfBirth = "تاريخ الميلاد مطلوب";
+      } else {
+        const cat = calculateCategory(form.dateOfBirth, form.isSpecialNeeds);
+        if (!cat) {
+          e.dateOfBirth = form.isSpecialNeeds
+            ? "ذوو الهمم: العمر يجب أن يكون بين 8 و 18 سنة"
+            : "العمر خارج النطاق المسموح به (8-35 سنة)";
+        }
       }
     }
+
     if (step === 1) {
-      if (!form.wilaya) e.wilaya = "الولاية مطلوبة";
+      if (!form.daira) e.daira = "الدائرة مطلوبة";
       if (!form.commune) e.commune = "البلدية مطلوبة";
     }
+
     if (step === 2) {
       if (!form.educationLevel) e.educationLevel = "المستوى الدراسي مطلوب";
-      if (!form.schoolName.trim()) e.schoolName = "اسم المؤسسة مطلوب";
+      if (!isOutsideSchool && !form.schoolName.trim())
+        e.schoolName = "اسم المؤسسة مطلوب";
     }
+
     if (step === 3) {
       if (!form.parentName.trim()) e.parentName = "اسم ولي الأمر مطلوب";
       if (!form.phone.trim()) e.phone = "رقم الهاتف مطلوب";
       else if (!/^(0)(5|6|7)[0-9]{8}$/.test(form.phone.replace(/\s/g, "")))
         e.phone = "رقم الهاتف غير صالح";
-      if (!form.email.trim()) e.email = "البريد الإلكتروني مطلوب";
-      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
+      if (form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
         e.email = "البريد الإلكتروني غير صالح";
     }
-    setErrors(e as Partial<FormData>);
+
+    setErrors(e as Partial<Record<keyof FormData, string>>);
     if (Object.keys(e).length > 0) {
       Object.values(e).forEach((msg) => toast.error(msg as string));
       return false;
@@ -226,6 +256,7 @@ export default function RegistrationForm() {
       if (!res.ok) {
         toast.error(data.error || "حدث خطأ، يرجى المحاولة مجدداً");
       } else {
+        setDetectedCategory(data.category);
         setSuccess(true);
         toast.success("تم التسجيل بنجاح!");
       }
@@ -236,7 +267,7 @@ export default function RegistrationForm() {
     }
   };
 
-  // ─── Success Screen ───────────────────────────────────────────────────────
+  // ─── Success Screen ─────────────────────────────────────────────────────
   if (success) {
     return (
       <section
@@ -275,6 +306,7 @@ export default function RegistrationForm() {
           >
             <PartyPopper size={72} color="#E8B41A" strokeWidth={1.5} />
           </motion.div>
+
           <h2
             style={{
               fontSize: "28px",
@@ -287,6 +319,7 @@ export default function RegistrationForm() {
           >
             تم التسجيل بنجاح!
           </h2>
+
           <p
             style={{
               color: "rgba(255,255,255,0.6)",
@@ -294,9 +327,9 @@ export default function RegistrationForm() {
               lineHeight: 1.8,
             }}
           >
-            شكراً لك! سنتواصل معك قريباً على رقم الهاتف أو البريد الإلكتروني
-            الذي أدخلته.
+            شكراً لك! سنتواصل معك قريباً.
           </p>
+
           {detectedCategory && (
             <div
               style={{
@@ -326,6 +359,41 @@ export default function RegistrationForm() {
               </span>
             </div>
           )}
+
+          {/* ── زر تسجيل شخص آخر ── */}
+          <motion.button
+            whileHover={{
+              scale: 1.04,
+              boxShadow: "0 0 30px rgba(232,180,26,0.4)",
+            }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => {
+              setSuccess(false);
+              setStep(0);
+              setForm(initialForm);
+              setDetectedCategory(null);
+              setErrors({});
+            }}
+            style={{
+              marginTop: "32px",
+              padding: "13px 32px",
+              borderRadius: "14px",
+              border: "none",
+              background: "linear-gradient(135deg, #E8B41A, #9917BA)",
+              color: "#fff",
+              fontSize: "15px",
+              fontWeight: 800,
+              cursor: "pointer",
+              fontFamily: "Cairo, sans-serif",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              margin: "32px auto 0",
+            }}
+          >
+            <UserPlus size={18} strokeWidth={2.5} />
+            تسجيل شخص آخر
+          </motion.button>
         </motion.div>
       </section>
     );
@@ -418,7 +486,7 @@ export default function RegistrationForm() {
             backdropFilter: "blur(20px)",
           }}
         >
-          {/* Progress Bar */}
+          {/* Progress */}
           <div style={{ marginBottom: "32px" }}>
             <div
               style={{
@@ -460,8 +528,6 @@ export default function RegistrationForm() {
                 }}
               />
             </div>
-
-            {/* Step Dots */}
             <div
               style={{
                 display: "flex",
@@ -493,7 +559,7 @@ export default function RegistrationForm() {
             </div>
           </div>
 
-          {/* Step Content */}
+          {/* Steps */}
           <AnimatePresence mode="wait">
             <motion.div
               key={step}
@@ -529,6 +595,7 @@ export default function RegistrationForm() {
                   focused={focused}
                   setFocused={setFocused}
                   set={set}
+                  isOutsideSchool={isOutsideSchool}
                 />
               )}
               {step === 3 && (
@@ -583,7 +650,6 @@ export default function RegistrationForm() {
                   gap: "8px",
                 }}
               >
-                {/* Arrow pointing right for RTL "previous" */}
                 <svg
                   width="16"
                   height="16"
@@ -697,7 +763,7 @@ export default function RegistrationForm() {
   );
 }
 
-// ─── Step 0: Personal Info ─────────────────────────────────────────────────
+// ─── Step 0: Personal Info ──────────────────────────────────────────────────
 function Step0({
   form,
   errors,
@@ -760,6 +826,82 @@ function Step0({
         />
       </Field>
 
+      {/* Special Needs Toggle */}
+      <motion.div
+        whileHover={{ scale: 1.01 }}
+        onClick={() => set("isSpecialNeeds", !form.isSpecialNeeds)}
+        style={{
+          padding: "16px 20px",
+          borderRadius: "16px",
+          background: form.isSpecialNeeds
+            ? "rgba(79,195,247,0.08)"
+            : "rgba(255,255,255,0.03)",
+          border: `1.5px solid ${form.isSpecialNeeds ? "rgba(79,195,247,0.35)" : "rgba(255,255,255,0.08)"}`,
+          display: "flex",
+          alignItems: "center",
+          gap: "14px",
+          cursor: "pointer",
+          transition: "all 0.2s ease",
+          userSelect: "none",
+        }}
+      >
+        {/* Checkbox */}
+        <div
+          style={{
+            width: "22px",
+            height: "22px",
+            borderRadius: "6px",
+            border: `2px solid ${form.isSpecialNeeds ? "#4FC3F7" : "rgba(255,255,255,0.2)"}`,
+            background: form.isSpecialNeeds ? "#4FC3F7" : "transparent",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+            transition: "all 0.2s",
+          }}
+        >
+          {form.isSpecialNeeds && (
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#000"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          )}
+        </div>
+        <Heart
+          size={18}
+          color={form.isSpecialNeeds ? "#4FC3F7" : "rgba(255,255,255,0.4)"}
+          strokeWidth={2}
+        />
+        <div>
+          <div
+            style={{
+              fontSize: "14px",
+              fontWeight: 700,
+              color: form.isSpecialNeeds ? "#4FC3F7" : "rgba(255,255,255,0.7)",
+            }}
+          >
+            من ذوي الهمم
+          </div>
+          <div
+            style={{
+              fontSize: "12px",
+              color: "rgba(255,255,255,0.4)",
+              marginTop: "2px",
+            }}
+          >
+            جميع الأعمار من 8 إلى 18 سنة
+          </div>
+        </div>
+      </motion.div>
+
       {/* Category Badge */}
       <AnimatePresence>
         {detectedCategory && (
@@ -803,7 +945,7 @@ function Step0({
   );
 }
 
-// ─── Step 1: Location ──────────────────────────────────────────────────────
+// ─── Step 1: Location ───────────────────────────────────────────────────────
 function Step1({ form, errors, focused, setFocused, set, communes }: any) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
@@ -818,60 +960,84 @@ function Step1({ form, errors, focused, setFocused, set, communes }: any) {
         الموقع الجغرافي
       </h3>
 
-      <Field label="الولاية" error={errors.wilaya} required>
+      {/* Info badge */}
+      <div
+        style={{
+          padding: "12px 16px",
+          borderRadius: "12px",
+          background: "rgba(232,180,26,0.07)",
+          border: "1px solid rgba(232,180,26,0.2)",
+          fontSize: "13px",
+          color: "rgba(255,255,255,0.6)",
+          display: "flex",
+          gap: "8px",
+          alignItems: "center",
+        }}
+      >
+        <MapPin size={15} color="#E8B41A" strokeWidth={2} />
+        ولاية تيميمون — اختر الدائرة ثم البلدية
+      </div>
+
+      <Field label="الدائرة" error={errors.daira} required>
         <select
-          value={form.wilaya}
+          value={form.daira}
           onChange={(e) => {
-            set("wilaya", e.target.value);
+            set("daira", e.target.value);
             set("commune", "");
           }}
-          onFocus={() => setFocused("wilaya")}
+          onFocus={() => setFocused("daira")}
           onBlur={() => setFocused("")}
           style={{
-            ...inputStyle(focused === "wilaya", !!errors.wilaya),
+            ...inputStyle(focused === "daira", !!errors.daira),
             appearance: "none" as any,
           }}
         >
           <option value="" style={{ background: "#0d0a1f" }}>
-            اختر الولاية
+            اختر الدائرة
           </option>
-          {wilayas.map((w) => (
-            <option key={w.id} value={w.id} style={{ background: "#0d0a1f" }}>
-              {w.name}
+          {dairas.map((d: any) => (
+            <option key={d.id} value={d.id} style={{ background: "#0d0a1f" }}>
+              {d.name}
             </option>
           ))}
         </select>
       </Field>
 
-      <Field label="البلدية" error={errors.commune} required>
-        <select
-          value={form.commune}
-          onChange={(e) => {
-            const selected = communes.find(
-              (c: any) => c.name === e.target.value,
-            );
-            set("commune", e.target.value);
-            set("daira", selected?.daira || "");
-          }}
-          onFocus={() => setFocused("commune")}
-          onBlur={() => setFocused("")}
-          disabled={!form.wilaya}
-          style={{
-            ...inputStyle(focused === "commune", !!errors.commune),
-            appearance: "none" as any,
-            opacity: !form.wilaya ? 0.5 : 1,
-          }}
-        >
-          <option value="" style={{ background: "#0d0a1f" }}>
-            اختر البلدية
-          </option>
-          {communes.map((c: any) => (
-            <option key={c.id} value={c.name} style={{ background: "#0d0a1f" }}>
-              {c.name} — {c.daira}
-            </option>
-          ))}
-        </select>
-      </Field>
+      <AnimatePresence>
+        {form.daira && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+          >
+            <Field label="البلدية" error={errors.commune} required>
+              <select
+                value={form.commune}
+                onChange={(e) => set("commune", e.target.value)}
+                onFocus={() => setFocused("commune")}
+                onBlur={() => setFocused("")}
+                style={{
+                  ...inputStyle(focused === "commune", !!errors.commune),
+                  appearance: "none" as any,
+                }}
+              >
+                <option value="" style={{ background: "#0d0a1f" }}>
+                  اختر البلدية
+                </option>
+                {communes.map((c: any) => (
+                  <option
+                    key={c.id}
+                    value={c.name}
+                    style={{ background: "#0d0a1f" }}
+                  >
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </Field>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {form.commune && (
         <motion.div
@@ -898,8 +1064,15 @@ function Step1({ form, errors, focused, setFocused, set, communes }: any) {
   );
 }
 
-// ─── Step 2: Education ─────────────────────────────────────────────────────
-function Step2({ form, errors, focused, setFocused, set }: any) {
+// ─── Step 2: Education ──────────────────────────────────────────────────────
+function Step2({
+  form,
+  errors,
+  focused,
+  setFocused,
+  set,
+  isOutsideSchool,
+}: any) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
       <h3
@@ -938,21 +1111,55 @@ function Step2({ form, errors, focused, setFocused, set }: any) {
         </select>
       </Field>
 
-      <Field label="اسم المؤسسة التعليمية" error={errors.schoolName} required>
-        <input
-          value={form.schoolName}
-          onChange={(e) => set("schoolName", e.target.value)}
-          onFocus={() => setFocused("schoolName")}
-          onBlur={() => setFocused("")}
-          placeholder="مثال: ثانوية الشهيد مبارك الميلي"
-          style={inputStyle(focused === "schoolName", !!errors.schoolName)}
-        />
-      </Field>
+      <AnimatePresence>
+        {!isOutsideSchool && form.educationLevel && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+          >
+            <Field
+              label="اسم المؤسسة التعليمية"
+              error={errors.schoolName}
+              required
+            >
+              <input
+                value={form.schoolName}
+                onChange={(e) => set("schoolName", e.target.value)}
+                onFocus={() => setFocused("schoolName")}
+                onBlur={() => setFocused("")}
+                placeholder="مثال: ثانوية الشهيد مبارك الميلي"
+                style={inputStyle(
+                  focused === "schoolName",
+                  !!errors.schoolName,
+                )}
+              />
+            </Field>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {isOutsideSchool && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          style={{
+            padding: "14px 18px",
+            borderRadius: "14px",
+            background: "rgba(79,195,247,0.06)",
+            border: "1px solid rgba(79,195,247,0.2)",
+            fontSize: "13px",
+            color: "rgba(255,255,255,0.55)",
+          }}
+        >
+          لا يلزم إدخال اسم مؤسسة لمن هم خارج المنظومة التعليمية.
+        </motion.div>
+      )}
     </div>
   );
 }
 
-// ─── Step 3: Parent Info ───────────────────────────────────────────────────
+// ─── Step 3: Parent Info ────────────────────────────────────────────────────
 function Step3({ form, errors, focused, setFocused, set }: any) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
@@ -964,7 +1171,7 @@ function Step3({ form, errors, focused, setFocused, set }: any) {
           marginBottom: "4px",
         }}
       >
-        معلومات ولي الأمر
+        معلومات ولي الأمر والتواصل
       </h3>
 
       <Field label="اسم ولي الأمر" error={errors.parentName} required>
@@ -993,7 +1200,7 @@ function Step3({ form, errors, focused, setFocused, set }: any) {
         />
       </Field>
 
-      <Field label="البريد الإلكتروني" error={errors.email} required>
+      <Field label="البريد الإلكتروني (اختياري)" error={errors.email}>
         <input
           type="email"
           value={form.email}
@@ -1011,7 +1218,7 @@ function Step3({ form, errors, focused, setFocused, set }: any) {
   );
 }
 
-// ─── Step 4: Extra Info ────────────────────────────────────────────────────
+// ─── Step 4: Extra Info ─────────────────────────────────────────────────────
 function Step4({ form, errors, focused, setFocused, set, toggleGenre }: any) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
@@ -1099,7 +1306,6 @@ function Step4({ form, errors, focused, setFocused, set, toggleGenre }: any) {
             <option style={{ background: "#0d0a1f" }}>نعم</option>
           </select>
         </Field>
-
         <Field label="هل لديك تجربة في التقديم؟">
           <select
             value={form.presentationExperience}
@@ -1111,6 +1317,28 @@ function Step4({ form, errors, focused, setFocused, set, toggleGenre }: any) {
           </select>
         </Field>
       </div>
+
+      <Field label="ماذا تعرف عن نجوم القراءة؟ (اختياري)">
+        <textarea
+          value={form.aboutProgram}
+          onChange={(e) => set("aboutProgram", e.target.value)}
+          onFocus={() => setFocused("aboutProgram")}
+          onBlur={() => setFocused("")}
+          placeholder="أخبرنا بما تعرفه عن البرنامج..."
+          style={textareaStyle(focused === "aboutProgram")}
+        />
+      </Field>
+
+      <Field label="لماذا تود المشاركة في نجوم القراءة؟ (اختياري)">
+        <textarea
+          value={form.motivation}
+          onChange={(e) => set("motivation", e.target.value)}
+          onFocus={() => setFocused("motivation")}
+          onBlur={() => setFocused("")}
+          placeholder="شاركنا دوافعك وطموحاتك..."
+          style={textareaStyle(focused === "motivation")}
+        />
+      </Field>
 
       <Field label="رابط فيديو تعريفي (اختياري)">
         <input

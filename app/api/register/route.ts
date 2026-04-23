@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { appendToSheet, checkDuplicateEmail } from "@/lib/googleSheets";
+import { appendToSheet } from "@/lib/googleSheets";
 import { calculateCategory } from "@/utils/helpers";
 
 export async function POST(req: NextRequest) {
@@ -9,9 +9,9 @@ export async function POST(req: NextRequest) {
       lastName,
       firstName,
       dateOfBirth,
-      wilaya,
-      commune,
+      isSpecialNeeds,
       daira,
+      commune,
       educationLevel,
       schoolName,
       parentName,
@@ -21,85 +21,91 @@ export async function POST(req: NextRequest) {
       genres,
       previousParticipation,
       presentationExperience,
+      aboutProgram,
+      motivation,
       videoLink,
     } = body;
 
-    // Required field validation
-    const required = {
+    // الحقول الإلزامية
+    const required: Record<string, any> = {
       lastName,
       firstName,
       dateOfBirth,
-      wilaya,
+      daira,
       commune,
       educationLevel,
-      schoolName,
       parentName,
       phone,
-      email,
     };
+
     for (const [key, val] of Object.entries(required)) {
       if (!val || val.toString().trim() === "") {
         return NextResponse.json(
           { error: "يرجى ملء جميع الحقول الإلزامية" },
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
 
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    // اسم المؤسسة إلزامي فقط إذا لم يكن خارج المنظومة
+    if (
+      educationLevel !== "خارج المنظومة التعليمية" &&
+      (!schoolName || schoolName.trim() === "")
+    ) {
       return NextResponse.json(
-        { error: "البريد الإلكتروني غير صالح" },
-        { status: 400 },
+        { error: "يرجى إدخال اسم المؤسسة التعليمية" },
+        { status: 400 }
       );
     }
 
-    // Phone validation (Algerian)
+    // التحقق من رقم الهاتف
     const phoneRegex = /^(0)(5|6|7)[0-9]{8}$/;
     if (!phoneRegex.test(phone.replace(/\s/g, ""))) {
       return NextResponse.json(
         { error: "رقم الهاتف غير صالح" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
-    // Category check
-    const category = calculateCategory(dateOfBirth);
+    // التحقق من البريد إن أُدخل
+    if (email && email.trim() !== "") {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return NextResponse.json(
+          { error: "البريد الإلكتروني غير صالح" },
+          { status: 400 }
+        );
+      }
+    }
+
+    // حساب الفئة
+    const category = calculateCategory(dateOfBirth, isSpecialNeeds === true);
     if (!category) {
       return NextResponse.json(
-        { error: "العمر خارج النطاق المسموح به للبرنامج (5-30 سنة)" },
-        { status: 400 },
+        { error: "العمر خارج النطاق المسموح به (5-35 سنة)" },
+        { status: 400 }
       );
     }
 
-    // Duplicate check
-    const isDuplicate = await checkDuplicateEmail(email);
-    if (isDuplicate) {
-      return NextResponse.json(
-        { error: "تم التسجيل مسبقاً بهذا البريد الإلكتروني" },
-        { status: 409 },
-      );
-    }
-
-    // Save to Google Sheets
     await appendToSheet({
       lastName: lastName.trim(),
       firstName: firstName.trim(),
       dateOfBirth,
       category,
-      wilaya,
-      commune,
+      isSpecialNeeds: isSpecialNeeds === true,
       daira,
+      commune,
       educationLevel,
-      schoolName: schoolName.trim(),
+      schoolName: schoolName?.trim() || "",
       parentName: parentName.trim(),
       phone: phone.trim(),
-      email: email.trim().toLowerCase(),
+      email: email?.trim().toLowerCase() || "",
       booksRead: booksRead?.toString() || "0",
       genres: Array.isArray(genres) ? genres.join(", ") : genres || "",
       previousParticipation: previousParticipation || "لا",
       presentationExperience: presentationExperience || "لا",
+      aboutProgram: aboutProgram?.trim() || "",
+      motivation: motivation?.trim() || "",
       videoLink: videoLink?.trim() || "",
     });
 
@@ -112,7 +118,7 @@ export async function POST(req: NextRequest) {
     console.error("Registration error:", error);
     return NextResponse.json(
       { error: "حدث خطأ في الخادم، يرجى المحاولة لاحقاً" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

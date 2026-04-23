@@ -14,7 +14,7 @@ interface StatItem {
 
 const stats: StatItem[] = [
   {
-    value: 500,
+    value: 800,
     suffix: "+",
     label: "طفل وشاب مشاركون",
     icon: <Users size={36} />,
@@ -30,7 +30,7 @@ const stats: StatItem[] = [
   {
     value: 50,
     suffix: "+",
-    label: "مشارك مكوّن في السرد",
+    label: "مشارك مكوّن في آليات السرد و تقديم المحتوى",
     icon: <Mic size={36} />,
     color: "#ffffff",
   },

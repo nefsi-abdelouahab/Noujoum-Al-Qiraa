@@ -22,18 +22,20 @@ export async function appendToSheet(data: any) {
     data.firstName,
     data.dateOfBirth,
     data.category,
-    data.wilaya,
+    data.isSpecialNeeds ? "نعم" : "لا",
+    data.daira,
     data.commune,
-    data.daira, // 👈 جديد
     data.educationLevel,
-    data.schoolName,
+    data.schoolName || "—",
     data.parentName,
     data.phone,
-    data.email,
-    data.booksRead,
-    data.genres,
-    data.previousParticipation,
-    data.presentationExperience,
+    data.email || "—",
+    data.booksRead || "0",
+    data.genres || "",
+    data.previousParticipation || "لا",
+    data.presentationExperience || "لا",
+    data.aboutProgram || "",
+    data.motivation || "",
     data.videoLink || "",
   ];
 
@@ -43,19 +45,4 @@ export async function appendToSheet(data: any) {
     valueInputOption: "USER_ENTERED",
     requestBody: { values: [row] },
   });
-}
-
-export async function checkDuplicateEmail(email: string): Promise<boolean> {
-  const auth = getAuth();
-  const sheets = google.sheets({ version: "v4", auth });
-
-  const res = await sheets.spreadsheets.values.get({
-    spreadsheetId: process.env.GOOGLE_SHEET_ID,
-    range: "Sheet1!M:M",
-  });
-
-  const emails = res.data.values?.flat() || [];
-  return emails
-    .map((e) => e.toString().toLowerCase())
-    .includes(email.toLowerCase());
 }

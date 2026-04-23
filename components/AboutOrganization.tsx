@@ -75,6 +75,7 @@ export default function AboutOrganization() {
               fontSize: "clamp(28px, 5vw, 44px)",
               fontWeight: 800,
               color: "#fff",
+               textAlign: "center",
             }}
           >
             فريق{"  "}
@@ -108,7 +109,7 @@ export default function AboutOrganization() {
           >
             <div
               style={{
-                padding: "36px",
+                textAlign: "center",
               }}
             >
               <h3

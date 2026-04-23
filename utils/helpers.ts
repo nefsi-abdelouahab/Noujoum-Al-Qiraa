@@ -1,4 +1,4 @@
-export type Category = "الأطفال" | "اليافعون" | "الشباب" | null;
+export type Category = "الأطفال" | "اليافعون" | "الشباب" | "ذوو الهمم" | null;
 
 export function calculateAge(dateOfBirth: string): number {
   const today = new Date();
@@ -9,11 +9,23 @@ export function calculateAge(dateOfBirth: string): number {
   return age;
 }
 
-export function calculateCategory(dateOfBirth: string): Category {
+export function calculateCategory(
+  dateOfBirth: string,
+  isSpecialNeeds: boolean = false,
+): Category {
   const age = calculateAge(dateOfBirth);
-  if (age >= 5 && age <= 13) return "الأطفال";
+
+  // ─── مسار ذوو الهمم — فئة مستقلة بشروطها الخاصة ───
+  if (isSpecialNeeds) {
+    if (age >= 8 && age <= 18) return "ذوو الهمم";
+    return null; // خارج نطاق ذوي الهمم = لا يُقبَل
+  }
+
+  // ─── مسار الفئات العادية ───
+  if (age >= 8 && age <= 13) return "الأطفال";
   if (age >= 14 && age <= 18) return "اليافعون";
-  if (age >= 19 && age <= 30) return "الشباب";
+  if (age >= 19 && age <= 35) return "الشباب";
+
   return null;
 }
 
@@ -25,6 +37,8 @@ export function getCategoryColor(category: Category): string {
       return "#9917BA";
     case "الشباب":
       return "#17BA6E";
+    case "ذوو الهمم":
+      return "#4FC3F7";
     default:
       return "#666";
   }
@@ -38,6 +52,8 @@ export function getCategoryEmoji(category: Category): string {
       return "🚀";
     case "الشباب":
       return "💡";
+    case "ذوو الهمم":
+      return "♿";
     default:
       return "❓";
   }
@@ -46,11 +62,13 @@ export function getCategoryEmoji(category: Category): string {
 export function getCategoryRange(category: Category): string {
   switch (category) {
     case "الأطفال":
-      return "5 - 13 سنة";
+      return "8 - 13 سنة";
     case "اليافعون":
       return "14 - 18 سنة";
     case "الشباب":
-      return "19 - 30 سنة";
+      return "19 - 35 سنة";
+    case "ذوو الهمم":
+      return "8 - 18 سنة";
     default:
       return "";
   }

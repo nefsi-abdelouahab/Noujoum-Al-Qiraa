@@ -9,7 +9,7 @@ const tajawal = Tajawal({
 });
 
 export const metadata: Metadata = {
-  title: "نجوم القراءة - جمعية رؤية تيميمون",
+  title: "نجوم القراءة - رؤية للإعلام و الإنتاج السمعي البصري",
   description: "حينما تصير القراءة أسلوب حياة - نحكي بالصوت والصور",
 };
 

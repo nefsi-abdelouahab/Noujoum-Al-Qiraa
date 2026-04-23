@@ -31,7 +31,7 @@ const features = [
   {
     icon: <Handshake size={22} />,
     title: "شراكات مؤسسية",
-    desc: "يؤطره نخبة من الأساتذة بشراكة مديريات الثقافة والتربية والشباب والرياضة",
+    desc: "يؤطره نخبة من الأساتذة تحت رعاية السيد والي ولاية تيميمون بالتنسيق مع مجموعة من المديريات ",
     color: "#E8B41A",
   },
 ];
@@ -106,6 +106,7 @@ export default function AboutProgram() {
                 lineHeight: 1.25,
                 marginBottom: "24px",
                 color: "#fff",
+                textAlign: "center",
               }}
             >
               برنامج{" "}
@@ -127,6 +128,7 @@ export default function AboutProgram() {
                 fontSize: "16px",
                 lineHeight: 1.9,
                 marginBottom: "20px",
+                     textAlign: "center",
               }}
             >
               يعتمد على نشر القراءة في الفضاءات الثقافية والشبانية وتفعيل
@@ -139,6 +141,7 @@ export default function AboutProgram() {
                 fontSize: "16px",
                 lineHeight: 1.9,
                 marginBottom: "32px",
+                 textAlign: "center",
               }}
             >
               يحفّز الناشئة عبر قراءة الكتب ومطالعة المواضيع ثم بلورتها في عرض
@@ -146,7 +149,7 @@ export default function AboutProgram() {
               وتقديم وإضاءة وصوت.
             </p>
 
-            <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
+            {/* <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
               {[" ولاية تيميمون"].map((tag, i) => (
                 <motion.span
                   key={i}
@@ -164,7 +167,7 @@ export default function AboutProgram() {
                   {tag}
                 </motion.span>
               ))}
-            </div>
+            </div> */}
           </motion.div>
 
           {/* Features Grid */}
