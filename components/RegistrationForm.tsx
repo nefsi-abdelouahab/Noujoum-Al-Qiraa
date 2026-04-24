@@ -12,6 +12,7 @@ import {
   BookOpen,
   Heart,
   UserPlus,
+  Download,
 } from "lucide-react";
 import { dairas, educationLevels, bookGenres } from "@/data/locations";
 import {
@@ -41,6 +42,7 @@ interface FormData {
   aboutProgram: string;
   motivation: string;
   videoLink: string;
+  agreedToTerms: boolean;
 }
 
 const STEPS = [
@@ -70,6 +72,7 @@ const initialForm: FormData = {
   aboutProgram: "",
   motivation: "",
   videoLink: "",
+  agreedToTerms: false,
 };
 
 // ─── Field Component ────────────────────────────────────────────────────────
@@ -245,6 +248,10 @@ export default function RegistrationForm() {
 
   const handleSubmit = async () => {
     if (!validateStep()) return;
+    if (!form.agreedToTerms) {
+      toast.error("يجب الموافقة على الالتزامات والتعهدات أولاً");
+      return;
+    }
     setLoading(true);
     try {
       const res = await fetch("/api/register", {
@@ -360,7 +367,6 @@ export default function RegistrationForm() {
             </div>
           )}
 
-          {/* ── زر تسجيل شخص آخر ── */}
           <motion.button
             whileHover={{
               scale: 1.04,
@@ -428,7 +434,7 @@ export default function RegistrationForm() {
       <div
         style={{ maxWidth: "720px", margin: "0 auto", position: "relative" }}
       >
-        {/* Header */}
+        {/* ─── Header ─────────────────────────────────────────────────────── */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -451,6 +457,7 @@ export default function RegistrationForm() {
           >
             انضم إلينا
           </span>
+
           <h2
             style={{
               fontSize: "clamp(28px, 5vw, 44px)",
@@ -470,9 +477,39 @@ export default function RegistrationForm() {
               نجوم القراءة
             </span>
           </h2>
+
+          {/* ── زر تحميل الدليل — دائماً مرئي ── */}
+          <motion.a
+            href="/دليل المشارك - نجوم القراءة الطبعة الثانية.pdf"
+            download
+            whileHover={{
+              scale: 1.05,
+              boxShadow: "0 0 24px rgba(232,180,26,0.35)",
+            }}
+            whileTap={{ scale: 0.97 }}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              marginTop: "8px",
+              padding: "11px 26px",
+              borderRadius: "100px",
+              background: "rgba(232,180,26,0.08)",
+              border: "1.5px solid rgba(232,180,26,0.3)",
+              color: "#E8B41A",
+              fontSize: "14px",
+              fontWeight: 700,
+              textDecoration: "none",
+              fontFamily: "Cairo, sans-serif",
+              transition: "all 0.2s",
+            }}
+          >
+            <Download size={15} strokeWidth={2.5} />
+            تحميل دليل المشارك
+          </motion.a>
         </motion.div>
 
-        {/* Form Card */}
+        {/* ─── Form Card ───────────────────────────────────────────────────── */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -708,29 +745,43 @@ export default function RegistrationForm() {
               </motion.button>
             ) : (
               <motion.button
-                whileHover={{
-                  scale: 1.04,
-                  boxShadow: "0 0 40px rgba(232,180,26,0.6)",
-                }}
-                whileTap={{ scale: 0.97 }}
+                whileHover={
+                  form.agreedToTerms
+                    ? {
+                        scale: 1.04,
+                        boxShadow: "0 0 40px rgba(232,180,26,0.6)",
+                      }
+                    : {}
+                }
+                whileTap={form.agreedToTerms ? { scale: 0.97 } : {}}
                 onClick={handleSubmit}
-                disabled={loading}
+                disabled={loading || !form.agreedToTerms}
                 style={{
                   padding: "13px 40px",
                   borderRadius: "14px",
                   border: "none",
-                  background: loading
-                    ? "rgba(255,255,255,0.1)"
-                    : "linear-gradient(135deg, #E8B41A, #9917BA)",
-                  color: "#fff",
+                  background:
+                    loading || !form.agreedToTerms
+                      ? "rgba(255,255,255,0.08)"
+                      : "linear-gradient(135deg, #E8B41A, #9917BA)",
+                  color:
+                    loading || !form.agreedToTerms
+                      ? "rgba(255,255,255,0.3)"
+                      : "#fff",
                   fontSize: "16px",
                   fontWeight: 800,
-                  cursor: loading ? "not-allowed" : "pointer",
+                  cursor:
+                    loading || !form.agreedToTerms ? "not-allowed" : "pointer",
                   fontFamily: "Cairo, sans-serif",
                   display: "flex",
                   alignItems: "center",
                   gap: "10px",
-                  boxShadow: "0 4px 20px rgba(232,180,26,0.35)",
+                  boxShadow:
+                    form.agreedToTerms && !loading
+                      ? "0 4px 20px rgba(232,180,26,0.35)"
+                      : "none",
+                  transition: "all 0.3s ease",
+                  opacity: form.agreedToTerms ? 1 : 0.5,
                 }}
               >
                 {loading ? (
@@ -845,7 +896,6 @@ function Step0({
           userSelect: "none",
         }}
       >
-        {/* Checkbox */}
         <div
           style={{
             width: "22px",
@@ -960,7 +1010,6 @@ function Step1({ form, errors, focused, setFocused, set, communes }: any) {
         الموقع الجغرافي
       </h3>
 
-      {/* Info badge */}
       <div
         style={{
           padding: "12px 16px",
@@ -1353,6 +1402,106 @@ function Step4({ form, errors, focused, setFocused, set, toggleGenre }: any) {
           }}
         />
       </Field>
+
+      {/* ── الموافقة على الالتزامات ── */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15 }}
+        style={{
+          padding: "20px",
+          borderRadius: "16px",
+          background: form.agreedToTerms
+            ? "rgba(232,180,26,0.07)"
+            : "rgba(255,255,255,0.03)",
+          border: `1.5px solid ${form.agreedToTerms ? "rgba(232,180,26,0.35)" : "rgba(255,255,255,0.08)"}`,
+          transition: "all 0.3s ease",
+        }}
+      >
+        <motion.div
+          whileHover={{ scale: 1.005 }}
+          onClick={() => set("agreedToTerms", !form.agreedToTerms)}
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            gap: "14px",
+            cursor: "pointer",
+            userSelect: "none",
+          }}
+        >
+          {/* Checkbox */}
+          <div
+            style={{
+              width: "22px",
+              height: "22px",
+              borderRadius: "6px",
+              border: `2px solid ${form.agreedToTerms ? "#E8B41A" : "rgba(255,255,255,0.25)"}`,
+              background: form.agreedToTerms ? "#E8B41A" : "transparent",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+              marginTop: "2px",
+              transition: "all 0.2s",
+              boxShadow: form.agreedToTerms
+                ? "0 0 12px rgba(232,180,26,0.45)"
+                : "none",
+            }}
+          >
+            <AnimatePresence>
+              {form.agreedToTerms && (
+                <motion.svg
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0, opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                  width="13"
+                  height="13"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#000"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </motion.svg>
+              )}
+            </AnimatePresence>
+          </div>
+
+          <div style={{ flex: 1 }}>
+            <span
+              style={{
+                fontSize: "13px",
+                fontWeight: 700,
+                color: form.agreedToTerms
+                  ? "rgba(255,255,255,0.9)"
+                  : "rgba(255,255,255,0.55)",
+                lineHeight: 1.7,
+                transition: "color 0.2s",
+                display: "block",
+              }}
+            >
+              أقر بأنني اطلعت على{" "}
+              <span style={{ color: "#E8B41A" }}>دليل المشارك</span> وأوافق على
+              جميع الالتزامات والتعهدات الواردة فيه
+            </span>
+            {!form.agreedToTerms && (
+              <span
+                style={{
+                  fontSize: "12px",
+                  color: "rgba(255,255,255,0.35)",
+                  marginTop: "4px",
+                  display: "block",
+                }}
+              >
+                يجب الموافقة لإتمام التسجيل
+              </span>
+            )}
+          </div>
+        </motion.div>
+      </motion.div>
     </div>
   );
 }
