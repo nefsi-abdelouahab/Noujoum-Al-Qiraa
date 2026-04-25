@@ -52,7 +52,7 @@ const Partners = () => {
         </span>
         <LogoLoop
           logos={logos}
-          speed={100}
+          speed={90}
           direction="left"
           logoHeight={60}
           gap={60}
