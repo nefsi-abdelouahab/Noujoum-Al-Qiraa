@@ -207,7 +207,7 @@ export default function RegistrationForm() {
         const cat = calculateCategory(form.dateOfBirth, form.isSpecialNeeds);
         if (!cat) {
           e.dateOfBirth = form.isSpecialNeeds
-            ? "ذوو الهمم: العمر يجب أن يكون بين 8 و 18 سنة"
+            ? "ذوو الهمم(المعاقين): العمر يجب أن يكون بين 8 و 18 سنة"
             : "العمر خارج النطاق المسموح به (8-35 سنة)";
         }
       }
