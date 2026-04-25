@@ -6,11 +6,9 @@ import Image from "next/image";
 const LogoLoop = LogoLoopComponent as React.ComponentType<any>;
 
 const Partners = () => {
-  const data = [
-    { logo_url: "/logo1.png" },
-    { logo_url: "/logo2.png" },
-    { logo_url: "/logo3.png" },
-  ]; // Mock data for testing;
+  const data = Array.from({ length: 11 }, (_, i) => ({
+    logo_url: `/logo${i + 1}.png`,
+  })); // Mock data for testing;
 
   const logos = data?.map((partner: any) => ({
     node: (
@@ -29,23 +27,29 @@ const Partners = () => {
     <div className="mt-40 mb-0 pb-0">
       <div
         dir="ltr"
-        style={{ height: "150px", position: "relative", overflow: "hidden" ,marginTop:"40px" ,textAlign: "center"}}
+        style={{
+          height: "150px",
+          position: "relative",
+          overflow: "hidden",
+          marginTop: "40px",
+          textAlign: "center",
+        }}
       >
         <span
-            style={{
-              display: "inline-block",
-              background: "rgba(232,180,26,0.1)",
-              border: "1px solid rgba(232,180,26,0.25)",
-              color: "#ffffff",
-              borderRadius: "8px",
-              padding: "6px 18px",
-              fontSize: "13px",
-              fontWeight: 700,
-              marginBottom: "30px",
-            }}
-          >
-            الشركاء والداعمون
-          </span>
+          style={{
+            display: "inline-block",
+            background: "rgba(232,180,26,0.1)",
+            border: "1px solid rgba(232,180,26,0.25)",
+            color: "#ffffff",
+            borderRadius: "8px",
+            padding: "6px 18px",
+            fontSize: "13px",
+            fontWeight: 700,
+            marginBottom: "30px",
+          }}
+        >
+          الشركاء والداعمون
+        </span>
         <LogoLoop
           logos={logos}
           speed={100}
