@@ -15,6 +15,7 @@ import MediaSection from "@/components/MediaSection";
 import RegistrationForm from "@/components/RegistrationForm";
 import ScrollToTop from "@/components/ScrollToTop";
 import Navbar from "@/components/Navbar";
+import Partners from "@/components/Partners";
 
 export default function Home() {
   const { scrollYProgress } = useScroll();
@@ -50,6 +51,7 @@ export default function Home() {
 
       <Navbar />
       <HeroSection />
+      <Partners />
       <StatsSection />
       <AboutProgram />
       <ProgramStages />
