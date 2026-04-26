@@ -6,7 +6,7 @@ import Image from "next/image";
 const LogoLoop = LogoLoopComponent as React.ComponentType<any>;
 
 const Partners = () => {
-  const data = Array.from({ length: 11 }, (_, i) => ({
+  const data = Array.from({ length: 9 }, (_, i) => ({
     logo_url: `/logo${i + 1}.png`,
   })); // Mock data for testing;
 
