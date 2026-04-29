@@ -938,7 +938,7 @@ function Step0({
               color: form.isSpecialNeeds ? "#4FC3F7" : "rgba(255,255,255,0.7)",
             }}
           >
-            من ذوي الهمم
+            من ذوي الهمم (ذوي الاحتياجات الخاصة)
           </div>
           <div
             style={{
