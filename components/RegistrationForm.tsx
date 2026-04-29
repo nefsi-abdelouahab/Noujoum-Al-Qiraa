@@ -847,6 +847,7 @@ function Step0({
             onFocus={() => setFocused("lastName")}
             onBlur={() => setFocused("")}
             placeholder="مثال: بن علي"
+            required
             style={inputStyle(focused === "lastName", !!errors.lastName)}
           />
         </Field>
@@ -858,6 +859,7 @@ function Step0({
             onFocus={() => setFocused("firstName")}
             onBlur={() => setFocused("")}
             placeholder="مثال: أحمد"
+            required
             style={inputStyle(focused === "firstName", !!errors.firstName)}
           />
         </Field>
