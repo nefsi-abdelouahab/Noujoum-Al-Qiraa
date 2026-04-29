@@ -940,7 +940,7 @@ function Step0({
           >
             من ذوي الهمم (ذوي الاحتياجات الخاصة)
           </div>
-          <div
+          {/* <div
             style={{
               fontSize: "12px",
               color: "rgba(255,255,255,0.4)",
@@ -948,7 +948,7 @@ function Step0({
             }}
           >
             جميع الأعمار من 8 إلى 18 سنة
-          </div>
+          </div> */}
         </div>
       </motion.div>
 
