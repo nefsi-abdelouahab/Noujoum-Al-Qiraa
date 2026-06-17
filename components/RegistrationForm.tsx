@@ -846,7 +846,7 @@ function Step0({
             onChange={(e) => set("lastName", e.target.value)}
             onFocus={() => setFocused("lastName")}
             onBlur={() => setFocused("")}
-            placeholder="مثال: بن علي"
+            placeholder="مثال: بن عيسى "
             style={inputStyle(focused === "lastName", !!errors.lastName)}
           />
         </Field>
