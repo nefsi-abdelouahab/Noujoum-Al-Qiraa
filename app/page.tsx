@@ -9,7 +9,6 @@ import HeroSection from "@/components/HeroSection";
 import StatsSection from "@/components/StatsSection";
 import AboutProgram from "@/components/AboutProgram";
 import ProgramStages from "@/components/ProgramStages";
-import ParticipantExperience from "@/components/ParticipantExperience";
 import AboutOrganization from "@/components/AboutOrganization";
 import MediaSection from "@/components/MediaSection";
 import RegistrationForm from "@/components/RegistrationForm";
@@ -59,8 +58,8 @@ export default function Home() {
       {/* <ParticipantExperience /> */}
       <AboutOrganization />
       <MediaSection />
-      <RegistrationForm />
-      {/* <RegistrationClosed /> */}
+      {/* <RegistrationForm /> */}
+      <RegistrationClosed />
       <ScrollToTop />
     </main>
   );
