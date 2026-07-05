@@ -16,7 +16,7 @@ import RegistrationForm from "@/components/RegistrationForm";
 import ScrollToTop from "@/components/ScrollToTop";
 import Navbar from "@/components/Navbar";
 import Partners from "@/components/Partners";
-import RegistrationClosed from "@/components/RegistrationClosed";
+import RegistrationClosed from "@/components/Registrationclosed";
 
 export default function Home() {
   const { scrollYProgress } = useScroll();
@@ -60,6 +60,7 @@ export default function Home() {
       <AboutOrganization />
       <MediaSection />
       <RegistrationForm />
+      {/* <RegistrationClosed /> */}
       <ScrollToTop />
     </main>
   );
